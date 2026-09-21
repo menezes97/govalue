@@ -14,4 +14,6 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Long> 
     boolean existsByGestorId(Long gestorId);
 
     List<Funcionario> findByGestorId(Long gestorId);
+
+    List<Funcionario> findByNomeContainingIgnoreCaseOrderByNome(String nome);
 }
