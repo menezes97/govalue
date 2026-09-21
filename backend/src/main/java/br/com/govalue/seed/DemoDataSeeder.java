@@ -12,6 +12,7 @@ import br.com.govalue.repository.PadraoRespostaRepository;
 import br.com.govalue.repository.PerguntaRepository;
 import br.com.govalue.repository.TipoAvaliacaoRepository;
 import br.com.govalue.repository.UsuarioRepository;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final AvaliacaoRepository avaliacoes;
     private final PerguntaRepository perguntas;
     private final PasswordEncoder encoder;
+    private final Clock clock;
 
     public DemoDataSeeder(
             UsuarioRepository usuarios,
@@ -49,7 +51,8 @@ public class DemoDataSeeder implements ApplicationRunner {
             PadraoRespostaRepository padroes,
             AvaliacaoRepository avaliacoes,
             PerguntaRepository perguntas,
-            PasswordEncoder encoder) {
+            PasswordEncoder encoder,
+            Clock clock) {
         this.usuarios = usuarios;
         this.funcionarios = funcionarios;
         this.tipos = tipos;
@@ -57,6 +60,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         this.avaliacoes = avaliacoes;
         this.perguntas = perguntas;
         this.encoder = encoder;
+        this.clock = clock;
     }
 
     @Override
@@ -82,6 +86,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         u.setEmail(email);
         u.setPerfil(perfil);
         u.setSenhaHash(encoder.encode(SENHA_DEMO));
+        u.setDataInicioVigencia(LocalDate.now(clock));
         return usuarios.save(u);
     }
 
@@ -100,11 +105,11 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private void criarAvaliacaoDemo() {
         Avaliacao a = new Avaliacao();
-        a.setDescricao("Autoavaliacao de desempenho 2026");
+        a.setDescricao("Autoavaliação de desempenho 2026");
         a.setDataInicioVigencia(LocalDate.of(2026, 1, 1));
         a.setDataFimVigencia(LocalDate.of(2026, 12, 31));
         a.setTipoAvaliacao(tipos.findAll().stream()
-                .filter(t -> t.getDescricao().equals("Autoavaliacao"))
+                .filter(t -> t.getDescricao().equals("Autoavaliação"))
                 .findFirst()
                 .orElseThrow());
         a = avaliacoes.save(a);
@@ -112,8 +117,8 @@ public class DemoDataSeeder implements ApplicationRunner {
         PadraoResposta padrao = padroes.findAll().getFirst();
         for (String texto : List.of(
                 "Entendo claramente as metas do meu papel.",
-                "Recebo feedback com frequencia suficiente.",
-                "Tenho as ferramentas necessarias para entregar meu trabalho.",
+                "Recebo feedback com frequência suficiente.",
+                "Tenho as ferramentas necessárias para entregar meu trabalho.",
                 "Me sinto reconhecido(a) pelas minhas entregas.")) {
             Pergunta p = new Pergunta();
             p.setAvaliacao(a);

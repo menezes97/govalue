@@ -11,6 +11,8 @@ import br.com.govalue.web.dto.FuncionarioDtos.CriarFuncionarioRequest;
 import br.com.govalue.web.dto.FuncionarioDtos.FuncionarioResponse;
 import br.com.govalue.web.error.NegocioException;
 import br.com.govalue.web.error.RecursoNaoEncontradoException;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,11 +26,14 @@ public class FuncionarioService {
     private final FuncionarioRepository funcionarios;
     private final UsuarioRepository usuarios;
     private final PasswordEncoder encoder;
+    private final Clock clock;
 
-    public FuncionarioService(FuncionarioRepository funcionarios, UsuarioRepository usuarios, PasswordEncoder encoder) {
+    public FuncionarioService(
+            FuncionarioRepository funcionarios, UsuarioRepository usuarios, PasswordEncoder encoder, Clock clock) {
         this.funcionarios = funcionarios;
         this.usuarios = usuarios;
         this.encoder = encoder;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -48,10 +53,10 @@ public class FuncionarioService {
     public FuncionarioResponse criar(CriarFuncionarioRequest req) {
         String cpf = Cpfs.normalizar(req.cpf());
         if (funcionarios.existsByCpf(cpf)) {
-            throw new NegocioException("CPF ja cadastrado");
+            throw new NegocioException("CPF já cadastrado");
         }
         if (usuarios.existsByEmailIgnoreCase(req.email())) {
-            throw new NegocioException("E-mail ja cadastrado");
+            throw new NegocioException("E-mail já cadastrado");
         }
 
         Usuario usuario = new Usuario();
@@ -59,6 +64,8 @@ public class FuncionarioService {
         usuario.setEmail(req.email().trim());
         usuario.setPerfil(Perfil.FUNCIONARIO);
         usuario.setSenhaHash(encoder.encode(req.senhaInicial()));
+        // Data pelo Clock da aplicacao (fuso de Sao Paulo), nao pelo relogio/fuso da JVM.
+        usuario.setDataInicioVigencia(LocalDate.now(clock));
         usuarios.save(usuario);
 
         Funcionario funcionario = new Funcionario();
@@ -75,13 +82,13 @@ public class FuncionarioService {
 
         String cpf = Cpfs.normalizar(req.cpf());
         if (!cpf.equals(funcionario.getCpf()) && funcionarios.existsByCpf(cpf)) {
-            throw new NegocioException("CPF ja cadastrado");
+            throw new NegocioException("CPF já cadastrado");
         }
 
         Usuario usuario = funcionario.getUsuario();
         String email = req.email().trim();
         if (!email.equalsIgnoreCase(usuario.getEmail()) && usuarios.existsByEmailIgnoreCase(email)) {
-            throw new NegocioException("E-mail ja cadastrado");
+            throw new NegocioException("E-mail já cadastrado");
         }
 
         validarGestor(funcionario, req.gestorId());
@@ -108,7 +115,7 @@ public class FuncionarioService {
             return;
         }
         if (gestorId.equals(funcionario.getId())) {
-            throw new NegocioException("Funcionario nao pode ser gestor de si mesmo");
+            throw new NegocioException("Funcionário não pode ser gestor de si mesmo");
         }
         Funcionario atual = obter(gestorId);
         for (int i = 0; atual != null && i < LIMITE_HIERARQUIA; i++) {
@@ -120,6 +127,6 @@ public class FuncionarioService {
     }
 
     private Funcionario obter(Long id) {
-        return funcionarios.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Funcionario", id));
+        return funcionarios.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Funcionário", id));
     }
 }

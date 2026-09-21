@@ -1,13 +1,13 @@
 -- Dados de referencia (nao sao dados pessoais): tipos de avaliacao e escala de resposta.
 
 INSERT INTO tipo_avaliacao (descricao) VALUES
-    ('Autoavaliacao'),
+    ('Autoavaliação'),
     ('Pesquisa de engajamento');
 
-INSERT INTO padrao_resposta (descricao) VALUES ('Escala de concordancia');
+INSERT INTO padrao_resposta (descricao) VALUES ('Escala de concordância');
 
 INSERT INTO resposta (descricao, padrao_resposta_id)
-SELECT d, (SELECT id FROM padrao_resposta WHERE descricao = 'Escala de concordancia')
+SELECT d, (SELECT id FROM padrao_resposta WHERE descricao = 'Escala de concordância')
 FROM (VALUES
     ('Discordo totalmente'),
     ('Discordo'),

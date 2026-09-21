@@ -38,7 +38,7 @@ public class Usuario {
     private Perfil perfil;
 
     @Column(name = "data_inicio_vigencia", nullable = false)
-    private LocalDate dataInicioVigencia = LocalDate.now();
+    private LocalDate dataInicioVigencia;
 
     @Column(name = "data_fim_vigencia")
     private LocalDate dataFimVigencia;

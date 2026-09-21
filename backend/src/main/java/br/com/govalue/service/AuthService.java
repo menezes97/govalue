@@ -12,7 +12,6 @@ import br.com.govalue.web.error.CredenciaisInvalidasException;
 import br.com.govalue.web.error.NegocioException;
 import br.com.govalue.web.error.RecursoNaoEncontradoException;
 import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,21 +47,21 @@ public class AuthService {
             throw new CredenciaisInvalidasException();
         }
 
-        Instant agora = clock.instant();
-        return new LoginResponse(jwt.gerar(usuario, agora), jwt.expiraEm(agora), paraResponse(usuario));
+        JwtService.TokenEmitido emitido = jwt.emitir(usuario);
+        return new LoginResponse(emitido.token(), emitido.expiraEm(), paraResponse(usuario));
     }
 
     @Transactional(readOnly = true)
     public UsuarioResponse me(UsuarioAutenticado autenticado) {
         Usuario usuario = usuarios.findById(autenticado.id())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuario", autenticado.id()));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário", autenticado.id()));
         return paraResponse(usuario);
     }
 
     @Transactional
     public void alterarSenha(UsuarioAutenticado autenticado, String senhaAtual, String novaSenha) {
         Usuario usuario = usuarios.findById(autenticado.id())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuario", autenticado.id()));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário", autenticado.id()));
 
         if (!encoder.matches(senhaAtual, usuario.getSenhaHash())) {
             throw new NegocioException("Senha atual incorreta");

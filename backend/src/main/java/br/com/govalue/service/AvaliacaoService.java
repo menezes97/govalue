@@ -74,7 +74,7 @@ public class AvaliacaoService {
     public void excluir(Long id) {
         Avaliacao avaliacao = obterAvaliacao(id);
         if (vinculos.existsByAvaliacaoId(id)) {
-            throw new NegocioException("Avaliacao ja vinculada a funcionarios nao pode ser excluida");
+            throw new NegocioException("Avaliação já vinculada a funcionários não pode ser excluída");
         }
         perguntas.deleteAll(perguntas.findByAvaliacaoId(id));
         avaliacoes.delete(avaliacao);
@@ -105,30 +105,30 @@ public class AvaliacaoService {
     public void excluirPergunta(Long id) {
         Pergunta pergunta = obterPergunta(id);
         if (vinculos.existsByPerguntaId(id)) {
-            throw new NegocioException("Pergunta ja vinculada a funcionarios nao pode ser excluida");
+            throw new NegocioException("Pergunta já vinculada a funcionários não pode ser excluída");
         }
         perguntas.delete(pergunta);
     }
 
     private void aplicar(Avaliacao avaliacao, AvaliacaoRequest req) {
         if (req.dataFimVigencia().isBefore(req.dataInicioVigencia())) {
-            throw new NegocioException("A data fim da vigencia nao pode ser anterior ao inicio");
+            throw new NegocioException("A data fim da vigência não pode ser anterior ao início");
         }
         avaliacao.setDescricao(req.descricao());
         avaliacao.setDataInicioVigencia(req.dataInicioVigencia());
         avaliacao.setDataFimVigencia(req.dataFimVigencia());
         avaliacao.setTipoAvaliacao(tipos.findById(req.tipoAvaliacaoId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Tipo de avaliacao", req.tipoAvaliacaoId())));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Tipo de avaliação", req.tipoAvaliacaoId())));
     }
 
     private void aplicar(Pergunta pergunta, PerguntaRequest req) {
         pergunta.setDescricao(req.descricao());
         pergunta.setPadraoResposta(padroes.findById(req.padraoRespostaId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Padrao de resposta", req.padraoRespostaId())));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Padrão de resposta", req.padraoRespostaId())));
     }
 
     private Avaliacao obterAvaliacao(Long id) {
-        return avaliacoes.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Avaliacao", id));
+        return avaliacoes.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Avaliação", id));
     }
 
     private Pergunta obterPergunta(Long id) {

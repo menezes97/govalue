@@ -4,6 +4,6 @@ package br.com.govalue.web.error;
 public class CredenciaisInvalidasException extends RuntimeException {
 
     public CredenciaisInvalidasException() {
-        super("E-mail ou senha invalidos");
+        super("E-mail ou senha inválidos");
     }
 }

@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Cpf {
 
-    String message() default "CPF invalido";
+    String message() default "CPF inválido";
 
     Class<?>[] groups() default {};
 

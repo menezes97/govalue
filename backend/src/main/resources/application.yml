@@ -1,6 +1,10 @@
 spring:
   application:
     name: govalue-api
+  web:
+    # Mensagens do Bean Validation (ex.: "não deve estar em branco") sempre em português.
+    locale: pt_BR
+    locale-resolver: fixed
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/govalue}
     username: ${DB_USER:govalue}

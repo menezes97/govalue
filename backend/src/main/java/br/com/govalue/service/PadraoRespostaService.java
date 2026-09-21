@@ -81,7 +81,7 @@ public class PadraoRespostaService {
     }
 
     private PadraoResposta obterPadrao(Long id) {
-        return padroes.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Padrao de resposta", id));
+        return padroes.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Padrão de resposta", id));
     }
 
     private Resposta obterResposta(Long id) {

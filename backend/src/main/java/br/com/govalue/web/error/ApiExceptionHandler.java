@@ -18,7 +18,7 @@ public class ApiExceptionHandler {
     ResponseEntity<ApiError> validacao(MethodArgumentNotValidException e) {
         Map<String, String> campos = new LinkedHashMap<>();
         e.getBindingResult().getFieldErrors().forEach(f -> campos.putIfAbsent(f.getField(), f.getDefaultMessage()));
-        var corpo = new ApiError(400, "Dados invalidos", campos, Instant.now());
+        var corpo = new ApiError(400, "Dados inválidos", campos, Instant.now());
         return ResponseEntity.badRequest().body(corpo);
     }
 
@@ -44,7 +44,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     ResponseEntity<ApiError> integridade(DataIntegrityViolationException e) {
-        return resposta(HttpStatus.CONFLICT, "Operacao viola uma restricao de integridade (registro duplicado ou em uso)");
+        return resposta(HttpStatus.CONFLICT, "Operação viola uma restrição de integridade (registro duplicado ou em uso)");
     }
 
     private ResponseEntity<ApiError> resposta(HttpStatus status, String mensagem) {
