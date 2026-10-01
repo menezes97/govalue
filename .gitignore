@@ -18,3 +18,6 @@ Thumbs.db
 # nunca versionar dados reais vindos do TCC original
 *.xlsx
 *.xls
+
+# notas pessoais de estudo, não fazem parte do projeto em si
+NOTES.md
