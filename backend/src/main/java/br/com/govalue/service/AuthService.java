@@ -7,12 +7,14 @@ import br.com.govalue.domain.Usuario;
 import br.com.govalue.repository.FuncionarioRepository;
 import br.com.govalue.repository.UsuarioRepository;
 import br.com.govalue.security.JwtService;
+import br.com.govalue.security.TentativaLoginService;
 import br.com.govalue.security.UsuarioAutenticado;
 import br.com.govalue.web.dto.AuthDtos.LoginResponse;
 import br.com.govalue.web.dto.AuthDtos.UsuarioResponse;
 import br.com.govalue.web.dto.FaceDtos.LoginDesafioFacialResponse;
 import br.com.govalue.web.dto.LoginResultado;
 import br.com.govalue.web.error.CredenciaisInvalidasException;
+import br.com.govalue.web.error.MuitasTentativasException;
 import br.com.govalue.web.error.NegocioException;
 import br.com.govalue.web.error.RecursoNaoEncontradoException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +40,7 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final JwtService jwt;
     private final FaceServiceClient faceService;
+    private final TentativaLoginService tentativas;
     private final Clock clock;
 
     public AuthService(
@@ -45,23 +49,38 @@ public class AuthService {
             PasswordEncoder encoder,
             JwtService jwt,
             FaceServiceClient faceService,
+            TentativaLoginService tentativas,
             Clock clock) {
         this.usuarios = usuarios;
         this.funcionarios = funcionarios;
         this.encoder = encoder;
         this.jwt = jwt;
         this.faceService = faceService;
+        this.tentativas = tentativas;
         this.clock = clock;
     }
 
     @Transactional(readOnly = true)
     public LoginResultado login(String email, String senha) {
-        Usuario usuario = usuarios.findByEmailIgnoreCase(email).orElseThrow(CredenciaisInvalidasException::new);
-
-        if (!encoder.matches(senha, usuario.getSenhaHash()) || !usuario.vigenteEm(LocalDate.now(clock))) {
-            throw new CredenciaisInvalidasException();
+        if (tentativas.estaBloqueado(email)) {
+            throw new MuitasTentativasException();
         }
 
+        // Verifica a existencia do usuario e a senha antes de decidir falhar, mas so registra a
+        // falha (e lanca a mesma excecao generica) depois — nao da pra deixar o e-mail existir
+        // ou nao mudar o comportamento, mesmo no rate limit.
+        Optional<Usuario> usuarioOpt = usuarios.findByEmailIgnoreCase(email);
+        boolean credenciaisValidas = usuarioOpt.isPresent()
+                && encoder.matches(senha, usuarioOpt.get().getSenhaHash())
+                && usuarioOpt.get().vigenteEm(LocalDate.now(clock));
+
+        if (!credenciaisValidas) {
+            tentativas.registrarFalha(email);
+            throw new CredenciaisInvalidasException();
+        }
+        tentativas.limpar(email);
+
+        Usuario usuario = usuarioOpt.get();
         if (usuario.isVerificacaoFacialHabilitada()) {
             JwtService.TokenEmitido pendente = jwt.emitirFacePendente(usuario);
             return new LoginDesafioFacialResponse(pendente.token(), pendente.expiraEm());
@@ -83,12 +102,18 @@ public class AuthService {
             throw new CredenciaisInvalidasException();
         }
 
+        if (tentativas.estaBloqueado(usuario.getEmail())) {
+            throw new MuitasTentativasException();
+        }
+
         List<Double> embeddingReferencia = desserializarEmbedding(usuario.getVerificacaoFacialEmbedding());
         VerificarResponse resultado = faceService.verificar(imagemBase64, embeddingReferencia);
 
         if (!resultado.corresponde()) {
+            tentativas.registrarFalha(usuario.getEmail());
             throw new CredenciaisInvalidasException();
         }
+        tentativas.limpar(usuario.getEmail());
 
         JwtService.TokenEmitido emitido = jwt.emitir(usuario);
         return new LoginResponse(emitido.token(), emitido.expiraEm(), paraResponse(usuario));

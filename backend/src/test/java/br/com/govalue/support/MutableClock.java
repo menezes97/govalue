@@ -1,6 +1,7 @@
 package br.com.govalue.support;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -18,6 +19,12 @@ public class MutableClock extends Clock {
 
     public void definir(LocalDate data) {
         this.instant = data.atTime(12, 0).atZone(zone).toInstant();
+    }
+
+    /** Avanca o relogio por uma duracao (ex.: pra testar janelas de minutos, como rate limit),
+     * sem precisar trocar o dia inteiro como definir(LocalDate) faz. */
+    public void avancar(Duration duracao) {
+        this.instant = this.instant.plus(duracao);
     }
 
     @Override

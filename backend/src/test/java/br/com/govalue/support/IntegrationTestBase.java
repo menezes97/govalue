@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.govalue.security.TentativaLoginService;
 import com.jayway.jsonpath.JsonPath;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -71,6 +72,7 @@ public abstract class IntegrationTestBase {
     @Autowired protected TestData data;
     @Autowired protected MutableClock clock;
     @Autowired protected FakeFaceServiceClient faceServiceClient;
+    @Autowired protected TentativaLoginService tentativas;
     @Autowired private JdbcTemplate jdbc;
 
     @BeforeEach
@@ -78,6 +80,7 @@ public abstract class IntegrationTestBase {
         jdbc.execute("TRUNCATE avaliacao_funcionario, pergunta, avaliacao, funcionario, usuario RESTART IDENTITY CASCADE");
         clock.definir(LocalDate.of(2026, 6, 15));
         faceServiceClient.resetar();
+        tentativas.limparTudo();
     }
 
     /** Faz login (pelo relogio atual) e devolve o JWT. Chame de novo depois de mudar o relogio. */

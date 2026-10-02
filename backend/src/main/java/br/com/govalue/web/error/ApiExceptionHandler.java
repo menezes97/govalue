@@ -27,6 +27,11 @@ public class ApiExceptionHandler {
         return resposta(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 
+    @ExceptionHandler(MuitasTentativasException.class)
+    ResponseEntity<ApiError> muitasTentativas(MuitasTentativasException e) {
+        return resposta(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     ResponseEntity<ApiError> acessoNegado(AccessDeniedException e) {
         return resposta(HttpStatus.FORBIDDEN, "Acesso negado");
