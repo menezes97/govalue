@@ -3,6 +3,8 @@ import { useForm } from '@mantine/form'
 import { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
+import { ehDesafioFacial } from '../api/types'
+import { CapturaFacial } from '../components/CapturaFacial'
 import { useAuth } from '../auth/AuthContext'
 
 const SENHA_DEMO = 'Demo@1234'
@@ -13,11 +15,12 @@ const USUARIOS_DEMO = [
 ]
 
 export function LoginPage() {
-  const { usuario, login } = useAuth()
+  const { usuario, login, loginFace } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [erro, setErro] = useState<string | null>(null)
   const [carregando, setCarregando] = useState(false)
+  const [tokenFacePendente, setTokenFacePendente] = useState<string | null>(null)
   const mostrarDemo = import.meta.env.VITE_SHOW_DEMO_HINT !== 'false'
 
   const form = useForm({
@@ -37,10 +40,28 @@ export function LoginPage() {
     setErro(null)
     setCarregando(true)
     try {
-      await login(valores.email, valores.senha)
+      const resultado = await login(valores.email, valores.senha)
+      if (ehDesafioFacial(resultado)) {
+        setTokenFacePendente(resultado.tokenFacePendente)
+        return
+      }
       navigate(origem ?? '/', { replace: true })
     } catch (e) {
       setErro(e instanceof ApiError ? e.message : 'Não foi possível entrar. Tente novamente.')
+    } finally {
+      setCarregando(false)
+    }
+  }
+
+  async function verificarRosto(imagemBase64: string) {
+    if (!tokenFacePendente) return
+    setErro(null)
+    setCarregando(true)
+    try {
+      await loginFace(tokenFacePendente, imagemBase64)
+      navigate(origem ?? '/', { replace: true })
+    } catch (e) {
+      setErro(e instanceof ApiError ? e.message : 'Rosto não reconhecido. Tente novamente.')
     } finally {
       setCarregando(false)
     }
@@ -55,34 +76,48 @@ export function LoginPage() {
         </Text>
 
         <Paper withBorder shadow="sm" p="xl" radius="md">
-          <form onSubmit={form.onSubmit(entrar)}>
+          {tokenFacePendente ? (
             <Stack>
+              <Text size="sm" ta="center">
+                Confirme sua identidade olhando para a câmera.
+              </Text>
               {erro && (
                 <Alert color="red" role="alert">
                   {erro}
                 </Alert>
               )}
-              <TextInput
-                label="E-mail"
-                placeholder="voce@empresa.com"
-                autoComplete="username"
-                key={form.key('email')}
-                {...form.getInputProps('email')}
-              />
-              <PasswordInput
-                label="Senha"
-                autoComplete="current-password"
-                key={form.key('senha')}
-                {...form.getInputProps('senha')}
-              />
-              <Button type="submit" loading={carregando} fullWidth>
-                Entrar
-              </Button>
+              <CapturaFacial onCapturar={verificarRosto} enviando={carregando} textoBotao="Verificar rosto" />
             </Stack>
-          </form>
+          ) : (
+            <form onSubmit={form.onSubmit(entrar)}>
+              <Stack>
+                {erro && (
+                  <Alert color="red" role="alert">
+                    {erro}
+                  </Alert>
+                )}
+                <TextInput
+                  label="E-mail"
+                  placeholder="voce@empresa.com"
+                  autoComplete="username"
+                  key={form.key('email')}
+                  {...form.getInputProps('email')}
+                />
+                <PasswordInput
+                  label="Senha"
+                  autoComplete="current-password"
+                  key={form.key('senha')}
+                  {...form.getInputProps('senha')}
+                />
+                <Button type="submit" loading={carregando} fullWidth>
+                  Entrar
+                </Button>
+              </Stack>
+            </form>
+          )}
         </Paper>
 
-        {mostrarDemo && (
+        {!tokenFacePendente && mostrarDemo && (
           <Paper withBorder p="md" mt="md" radius="md">
             <Text size="sm" fw={500} mb={4}>
               Ambiente de demonstração

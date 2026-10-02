@@ -6,6 +6,8 @@ import br.com.govalue.web.dto.AuthDtos.AlterarSenhaRequest;
 import br.com.govalue.web.dto.AuthDtos.LoginRequest;
 import br.com.govalue.web.dto.AuthDtos.LoginResponse;
 import br.com.govalue.web.dto.AuthDtos.UsuarioResponse;
+import br.com.govalue.web.dto.FaceDtos.FaceLoginRequest;
+import br.com.govalue.web.dto.LoginResultado;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,8 +29,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+    public LoginResultado login(@Valid @RequestBody LoginRequest request) {
         return auth.login(request.email(), request.senha());
+    }
+
+    /** Segundo passo do login, só chamado quando /login respondeu com um desafio facial pendente. */
+    @PostMapping("/login/face")
+    public LoginResponse loginFace(@Valid @RequestBody FaceLoginRequest request) {
+        return auth.loginFace(request.tokenFacePendente(), request.imagemBase64());
     }
 
     @GetMapping("/me")

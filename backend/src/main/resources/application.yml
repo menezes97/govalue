@@ -25,9 +25,12 @@ govalue:
     # Em producao, defina JWT_SECRET com pelo menos 32 caracteres aleatorios.
     secret: ${JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
+    face-pending-expiration-minutes: ${JWT_FACE_PENDING_EXPIRATION_MINUTES:5}
   seed:
     # Cria usuarios FICTICIOS de demonstracao no primeiro start. Desligue em producao.
     enabled: ${SEED_DEMO_DATA:true}
+  face-service:
+    url: ${FACE_SERVICE_URL:http://localhost:8000}
 
 management:
   endpoints:

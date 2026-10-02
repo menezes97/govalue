@@ -18,5 +18,5 @@ public final class AuthDtos {
     public record UsuarioResponse(
             Long id, String nome, String email, Perfil perfil, Long funcionarioId, boolean gestor) {}
 
-    public record LoginResponse(String token, Instant expiraEm, UsuarioResponse usuario) {}
+    public record LoginResponse(String token, Instant expiraEm, UsuarioResponse usuario) implements LoginResultado {}
 }

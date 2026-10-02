@@ -20,14 +20,29 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      face-service:
+        condition: service_healthy
     environment:
       DB_URL: jdbc:postgresql://db:5432/govalue
       DB_USER: ${DB_USER:-govalue}
       DB_PASSWORD: ${DB_PASSWORD:-govalue}
       JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me-dev-only-secret-change-me}
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      FACE_SERVICE_URL: http://face-service:8000
     ports:
       - "8080:8080"
+
+  face-service:
+    build: ./face-service
+    environment:
+      FACE_MATCH_THRESHOLD: ${FACE_MATCH_THRESHOLD:-0.6}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   govalue-db:

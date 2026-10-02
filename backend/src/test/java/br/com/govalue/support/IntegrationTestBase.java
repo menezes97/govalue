@@ -31,7 +31,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  */
 @SpringBootTest(properties = "govalue.seed.enabled=false")
 @AutoConfigureMockMvc
-@Import({IntegrationTestBase.TestClockConfig.class, TestData.class})
+@Import({IntegrationTestBase.TestClockConfig.class, IntegrationTestBase.TestFaceServiceConfig.class, TestData.class})
 public abstract class IntegrationTestBase {
 
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
@@ -56,15 +56,28 @@ public abstract class IntegrationTestBase {
         }
     }
 
+    /** Substitui o FaceServiceClient real (que chamaria o microsservico Python) por um dublê
+     * controlável — os testes de verificação facial nunca dependem do face-service estar no ar. */
+    @TestConfiguration
+    static class TestFaceServiceConfig {
+        @Bean
+        @Primary
+        FakeFaceServiceClient fakeFaceServiceClient() {
+            return new FakeFaceServiceClient();
+        }
+    }
+
     @Autowired protected MockMvc mvc;
     @Autowired protected TestData data;
     @Autowired protected MutableClock clock;
+    @Autowired protected FakeFaceServiceClient faceServiceClient;
     @Autowired private JdbcTemplate jdbc;
 
     @BeforeEach
     void limparBancoEResetarRelogio() {
         jdbc.execute("TRUNCATE avaliacao_funcionario, pergunta, avaliacao, funcionario, usuario RESTART IDENTITY CASCADE");
         clock.definir(LocalDate.of(2026, 6, 15));
+        faceServiceClient.resetar();
     }
 
     /** Faz login (pelo relogio atual) e devolve o JWT. Chame de novo depois de mudar o relogio. */

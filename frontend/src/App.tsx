@@ -10,6 +10,7 @@ import { GestorPage } from './pages/GestorPage'
 import { LoginPage } from './pages/LoginPage'
 import { MinhasAvaliacoesPage } from './pages/MinhasAvaliacoesPage'
 import { ResponderPage } from './pages/ResponderPage'
+import { SegurancaPage } from './pages/SegurancaPage'
 import { SenhaPage } from './pages/SenhaPage'
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route index element={<HomeRedirect />} />
           <Route path="senha" element={<SenhaPage />} />
+          <Route path="seguranca" element={<SegurancaPage />} />
 
           <Route path="minhas-avaliacoes" element={<MinhasAvaliacoesPage />} />
           <Route path="minhas-avaliacoes/:avaliacaoId" element={<ResponderPage modo="FUNCIONARIO" />} />

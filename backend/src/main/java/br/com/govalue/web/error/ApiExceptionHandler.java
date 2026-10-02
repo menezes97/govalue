@@ -42,6 +42,16 @@ public class ApiExceptionHandler {
         return resposta(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
     }
 
+    @ExceptionHandler(RostoInvalidoException.class)
+    ResponseEntity<ApiError> rostoInvalido(RostoInvalidoException e) {
+        return resposta(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
+    }
+
+    @ExceptionHandler(ServicoFacialIndisponivelException.class)
+    ResponseEntity<ApiError> servicoFacialIndisponivel(ServicoFacialIndisponivelException e) {
+        return resposta(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     ResponseEntity<ApiError> integridade(DataIntegrityViolationException e) {
         return resposta(HttpStatus.CONFLICT, "Operação viola uma restrição de integridade (registro duplicado ou em uso)");

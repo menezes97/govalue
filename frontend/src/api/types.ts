@@ -19,6 +19,22 @@ export interface LoginResponse {
   usuario: Usuario
 }
 
+/** Só presente quando a verificação facial está ativada: senha OK, falta o segundo fator. */
+export interface LoginDesafioFacialResponse {
+  tokenFacePendente: string
+  expiraEm: string
+}
+
+export type LoginResultado = LoginResponse | LoginDesafioFacialResponse
+
+export function ehDesafioFacial(resultado: LoginResultado): resultado is LoginDesafioFacialResponse {
+  return 'tokenFacePendente' in resultado
+}
+
+export interface VerificacaoFacialStatusResponse {
+  habilitada: boolean
+}
+
 export interface ApiErrorBody {
   status: number
   mensagem: string

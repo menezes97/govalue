@@ -15,6 +15,7 @@ import br.com.govalue.repository.PerguntaRepository;
 import br.com.govalue.repository.RespostaRepository;
 import br.com.govalue.repository.TipoAvaliacaoRepository;
 import br.com.govalue.repository.UsuarioRepository;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -71,6 +72,14 @@ public class TestData {
         u.setDataInicioVigencia(LocalDate.of(2000, 1, 1));
         u.setDataFimVigencia(fimVigencia);
         return usuarios.save(u);
+    }
+
+    /** Ativa a verificação facial pulando o fluxo de registro (sem precisar de foto/face-service real). */
+    public void habilitarVerificacaoFacial(Usuario usuario) {
+        usuario.setVerificacaoFacialHabilitada(true);
+        usuario.setVerificacaoFacialEmbedding("[1.0,2.0,3.0]");
+        usuario.setVerificacaoFacialConsentimentoEm(Instant.now());
+        usuarios.save(usuario);
     }
 
     public Funcionario funcionario(String nome, String email, String cpf, Funcionario gestor) {

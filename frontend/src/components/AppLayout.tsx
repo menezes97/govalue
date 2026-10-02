@@ -52,6 +52,9 @@ export function AppLayout() {
               <Menu.Item component={Link} to="/senha">
                 Alterar senha
               </Menu.Item>
+              <Menu.Item component={Link} to="/seguranca">
+                Segurança
+              </Menu.Item>
               <Menu.Item color="red" onClick={logout}>
                 Sair
               </Menu.Item>

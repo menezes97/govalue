@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,6 +43,16 @@ public class Usuario {
 
     @Column(name = "data_fim_vigencia")
     private LocalDate dataFimVigencia;
+
+    @Column(name = "verificacao_facial_habilitada", nullable = false)
+    private boolean verificacaoFacialHabilitada;
+
+    /** Array JSON de floats (embedding de 128 dimensoes) — opaco para o Java, so repassado ao face-service. */
+    @Column(name = "verificacao_facial_embedding")
+    private String verificacaoFacialEmbedding;
+
+    @Column(name = "verificacao_facial_consentimento_em")
+    private Instant verificacaoFacialConsentimentoEm;
 
     /** Mesma regra do login original: acesso so dentro da janela de vigencia. */
     public boolean vigenteEm(LocalDate data) {

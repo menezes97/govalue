@@ -1,11 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { AUTH_STORAGE_KEY, api, onUnauthorized } from '../api/client'
-import type { LoginResponse, Usuario } from '../api/types'
+import { ehDesafioFacial, type LoginResponse, type LoginResultado, type Usuario } from '../api/types'
 
 interface AuthContextValue {
   usuario: Usuario | null
-  login: (email: string, senha: string) => Promise<Usuario>
+  login: (email: string, senha: string) => Promise<LoginResultado>
+  loginFace: (tokenFacePendente: string, imagemBase64: string) => Promise<Usuario>
   logout: () => void
 }
 
@@ -53,15 +54,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [sessao, logout])
 
   const login = useCallback(async (email: string, senha: string) => {
-    const resposta = await api.post<LoginResponse>('/api/auth/login', { email, senha })
+    const resultado = await api.post<LoginResultado>('/api/auth/login', { email, senha })
+    if (ehDesafioFacial(resultado)) return resultado
+
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(resultado))
+    setSessao(resultado)
+    return resultado
+  }, [])
+
+  // Segundo passo do login, só chamado quando login() devolveu um desafio facial pendente.
+  const loginFace = useCallback(async (tokenFacePendente: string, imagemBase64: string) => {
+    const resposta = await api.post<LoginResponse>('/api/auth/login/face', { tokenFacePendente, imagemBase64 })
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(resposta))
     setSessao(resposta)
     return resposta.usuario
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ usuario: sessao?.usuario ?? null, login, logout }),
-    [sessao, login, logout],
+    () => ({ usuario: sessao?.usuario ?? null, login, loginFace, logout }),
+    [sessao, login, loginFace, logout],
   )
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
