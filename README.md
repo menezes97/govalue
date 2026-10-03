@@ -79,4 +79,4 @@ cd backend
 ./mvnw test
 ```
 
-63 testes (unitários + integração com Testcontainers), cobrindo autenticação, CRUD administrativo, fluxo completo de avaliação (vincular em massa, responder como funcionário e como gestor) e dashboard — todos passando contra um Postgres real, não mock.
+Testes unitários e de integração (Testcontainers), cobrindo autenticação, CRUD administrativo, fluxo completo de avaliação (vincular em massa, responder como funcionário e como gestor) e dashboard — todos passando contra um Postgres real, não mock.
